@@ -2,6 +2,7 @@ import hashlib
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse, RedirectResponse
@@ -19,6 +20,8 @@ from app.services.graph import RAGService
 from app.services.parsing import DocumentParseError, parse_document
 
 settings = get_settings()
+DatabaseSession = Annotated[Session, Depends(get_db)]
+UploadedFile = Annotated[UploadFile, File()]
 
 
 @asynccontextmanager
@@ -52,7 +55,7 @@ def live() -> HealthResponse:
 
 
 @app.get("/health/ready", response_model=HealthResponse, tags=["health"])
-def ready(session: Session = Depends(get_db)) -> HealthResponse:
+def ready(session: DatabaseSession) -> HealthResponse:
     try:
         extension = session.scalar(
             text("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')")
@@ -71,7 +74,7 @@ def ready(session: Session = Depends(get_db)) -> HealthResponse:
     tags=["documents"],
 )
 def upload_document(
-    file: UploadFile = File(...), session: Session = Depends(get_db)
+    file: UploadedFile, session: DatabaseSession
 ) -> DocumentResponse:
     filename = Path(file.filename or "").name
     data = file.file.read(settings.max_upload_bytes + 1)
@@ -137,7 +140,7 @@ def upload_document(
 
 
 @app.get("/api/v1/documents", response_model=list[DocumentResponse], tags=["documents"])
-def list_documents(session: Session = Depends(get_db)) -> list[DocumentResponse]:
+def list_documents(session: DatabaseSession) -> list[DocumentResponse]:
     rows = session.execute(
         select(Document, func.count(Chunk.id))
         .outerjoin(Chunk)
@@ -148,7 +151,7 @@ def list_documents(session: Session = Depends(get_db)) -> list[DocumentResponse]
 
 
 @app.get("/api/v1/documents/{document_id}", response_model=DocumentResponse, tags=["documents"])
-def get_document(document_id: uuid.UUID, session: Session = Depends(get_db)) -> DocumentResponse:
+def get_document(document_id: uuid.UUID, session: DatabaseSession) -> DocumentResponse:
     document = session.get(Document, document_id)
     if not document:
         raise HTTPException(status_code=404, detail="Belge bulunamadı.")
@@ -159,7 +162,7 @@ def get_document(document_id: uuid.UUID, session: Session = Depends(get_db)) -> 
 
 
 @app.delete("/api/v1/documents/{document_id}", status_code=204, tags=["documents"])
-def delete_document(document_id: uuid.UUID, session: Session = Depends(get_db)) -> None:
+def delete_document(document_id: uuid.UUID, session: DatabaseSession) -> None:
     document = session.get(Document, document_id)
     if not document:
         raise HTTPException(status_code=404, detail="Belge bulunamadı.")
@@ -170,7 +173,7 @@ def delete_document(document_id: uuid.UUID, session: Session = Depends(get_db)) 
 
 
 @app.post("/api/v1/query", response_model=QueryResponse, tags=["rag"])
-def query(request: QueryRequest, session: Session = Depends(get_db)) -> QueryResponse:
+def query(request: QueryRequest, session: DatabaseSession) -> QueryResponse:
     try:
         result, trace_id = RAGService(settings).answer(
             session, request.question.strip(), request.document_ids
@@ -195,4 +198,3 @@ def _document_response(document: Document, chunk_count: int) -> DocumentResponse
         chunk_count=chunk_count,
         created_at=document.created_at,
     )
-

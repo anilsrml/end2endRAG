@@ -1,20 +1,17 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TypeVar
-
-T = TypeVar("T")
 
 
 @dataclass(slots=True)
-class RankedItem:
+class RankedItem[T]:
     key: str
     value: T
     score: float
 
 
-def reciprocal_rank_fusion(
+def reciprocal_rank_fusion[T](
     rankings: Sequence[Sequence[tuple[str, T]]], *, k: int = 60, limit: int = 20
-) -> list[RankedItem]:
+) -> list[RankedItem[T]]:
     scores: dict[str, float] = {}
     values: dict[str, T] = {}
 
@@ -25,4 +22,3 @@ def reciprocal_rank_fusion(
 
     ordered = sorted(scores, key=scores.__getitem__, reverse=True)[:limit]
     return [RankedItem(key=key, value=values[key], score=scores[key]) for key in ordered]
-

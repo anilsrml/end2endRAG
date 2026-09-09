@@ -1,7 +1,7 @@
 """Create documents and chunks tables."""
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from pgvector.sqlalchemy import VECTOR
 from sqlalchemy.dialects import postgresql
 
@@ -76,4 +76,3 @@ def downgrade() -> None:
     op.drop_table("chunks")
     op.drop_table("documents")
     op.execute("DROP EXTENSION IF EXISTS vector")
-
