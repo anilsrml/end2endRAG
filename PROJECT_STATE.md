@@ -33,7 +33,8 @@ ortamıdır; şu aşamada canlıya alma hedefi yoktur.
 - `.env` Git dışında tutuldu; `.env.example` örnek yapılandırma olarak eklendi.
 - Docker Compose yapılandırması `docker compose config --quiet` ile doğrulandı.
 - Hedef GitHub deposu public olarak ayarlandı: `anilsrml/end2endRAG`.
-- Yerel Git deposu yeniden oluşturuldu ve GitHub remote bağlantısı yapılandırıldı.
+- Yerel Git deposu yeniden oluşturuldu; ilk MVP commit'i `main` dalına gönderildi ve
+  `origin/main` takibi yapılandırıldı.
 
 ## Güncel engeller ve belirsizlikler
 
@@ -52,7 +53,7 @@ ortamıdır; şu aşamada canlıya alma hedefi yoktur.
 | `uv run ruff check .` | Bekliyor | WSL ortamında `uv`/`ruff` yok |
 | Docker image build | Bekliyor | Docker daemon erişimi gerekli |
 | Uçtan uca RAG sorgusu | Bekliyor | API anahtarları ve çalışan container gerekli |
-| GitHub push kontrolü | Hazırlanıyor | Yerel depo ve remote yapılandırıldı |
+| GitHub push kontrolü | Başarılı | `main` dalı `anilsrml/end2endRAG` deposuna gönderildi |
 
 ## Sonraki üç adım
 
