@@ -31,7 +31,6 @@ Swagger / Chat UI -> FastAPI -> LangGraph
 - OpenRouter API anahtarı ve model slug'ı
 - İsteğe bağlı Cohere ve LangSmith anahtarları
 
-WSL2 yalnız geliştirme ortamıdır. Uygulama Windows'taki Docker Desktop üzerinde container olarak çalışır.
 
 ## Hızlı başlangıç
 
