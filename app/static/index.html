@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>end2endRAG</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+      body { margin: 0; background: #0b1020; color: #eef2ff; }
+      main { max-width: 820px; margin: 0 auto; padding: 48px 20px; }
+      h1 { margin-bottom: 6px; }
+      .muted { color: #a5b4cf; }
+      form { display: flex; gap: 10px; margin: 30px 0; }
+      input { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid #334155; background: #111827; color: inherit; }
+      button { padding: 0 20px; border: 0; border-radius: 10px; background: #6366f1; color: white; font-weight: 700; cursor: pointer; }
+      section { background: #111827; border: 1px solid #243047; border-radius: 14px; padding: 20px; margin-top: 16px; }
+      .source { border-top: 1px solid #334155; padding-top: 12px; margin-top: 12px; }
+      a { color: #a5b4fc; }
+      pre { white-space: pre-wrap; font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>end2endRAG</h1>
+      <p class="muted">PostgreSQL hybrid search ve kaynaklı yanıt demosu · <a href="/docs">Swagger</a></p>
+      <form id="query-form">
+        <input id="question" minlength="3" maxlength="2000" placeholder="Belgelerin hakkında bir soru sor…" required />
+        <button type="submit">Sor</button>
+      </form>
+      <p id="status" class="muted"></p>
+      <section id="result" hidden>
+        <pre id="answer"></pre>
+        <div id="sources"></div>
+      </section>
+    </main>
+    <script>
+      const form = document.querySelector("#query-form");
+      const status = document.querySelector("#status");
+      const result = document.querySelector("#result");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        status.textContent = "Aranıyor…";
+        result.hidden = true;
+        const started = performance.now();
+        try {
+          const response = await fetch("/api/v1/query", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: document.querySelector("#question").value, document_ids: [] })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.detail || "İstek başarısız oldu.");
+          document.querySelector("#answer").textContent = data.answer;
+          document.querySelector("#sources").innerHTML = data.sources.map((source, index) =>
+            `<div class="source"><strong>[${index + 1}] ${escapeHtml(source.filename)}</strong>` +
+            `${source.page ? ` · sayfa ${source.page}` : ""}` +
+            `${source.heading ? ` · ${escapeHtml(source.heading)}` : ""}` +
+            `<p class="muted">${escapeHtml(source.excerpt)}</p></div>`
+          ).join("");
+          result.hidden = false;
+          status.textContent = `${((performance.now() - started) / 1000).toFixed(1)} saniye · ${data.model}`;
+        } catch (error) {
+          status.textContent = error.message;
+        }
+      });
+      function escapeHtml(value) {
+        const div = document.createElement("div");
+        div.textContent = value || "";
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>
+
