@@ -35,13 +35,14 @@ ortamıdır; şu aşamada canlıya alma hedefi yoktur.
 - Hedef GitHub deposu public olarak ayarlandı: `anilsrml/end2endRAG`.
 - Yerel Git deposu yeniden oluşturuldu; ilk MVP commit'i `main` dalına gönderildi ve
   `origin/main` takibi yapılandırıldı.
+- GitHub Actions üzerinde bağımlılık kurulumu, Ruff ve pytest kontrolleri başarıyla geçti.
 
 ## Güncel engeller ve belirsizlikler
 
 - Codex ortamı Docker socket erişimine izin vermeyebilir. Tam image build ve container
   testi gerekirse Windows terminalinde Docker Desktop üzerinden çalıştırılmalıdır.
-- WSL ortamında `uv`, `pytest` ve `ruff` komutları şu anda bulunmuyor; birim testleri
-  ve lint bu oturumda çalıştırılamadı.
+- WSL ortamında `uv`, `pytest` ve `ruff` komutları kalıcı olarak kurulu değil; doğrulamalar
+  GitHub Actions üzerinde tamamlandı.
 - Gerçek API anahtarlarıyla uçtan uca belge yükleme ve sorgu testi henüz doğrulanmadı.
 
 ## Doğrulama durumu
@@ -49,8 +50,8 @@ ortamıdır; şu aşamada canlıya alma hedefi yoktur.
 | Kontrol | Durum | Sonuç |
 |---|---|---|
 | `docker compose config --quiet` | Başarılı | 2026-09-09 |
-| `uv run pytest` | Bekliyor | WSL ortamında `uv`/`pytest` yok |
-| `uv run ruff check .` | Bekliyor | WSL ortamında `uv`/`ruff` yok |
+| `uv run pytest` | Başarılı | GitHub Actions, 2026-09-09 |
+| `uv run ruff check .` | Başarılı | Yerel geçici Ruff kurulumu ve GitHub Actions, 2026-09-09 |
 | Docker image build | Bekliyor | Docker daemon erişimi gerekli |
 | Uçtan uca RAG sorgusu | Bekliyor | API anahtarları ve çalışan container gerekli |
 | GitHub push kontrolü | Başarılı | `main` dalı `anilsrml/end2endRAG` deposuna gönderildi |
@@ -60,8 +61,7 @@ ortamıdır; şu aşamada canlıya alma hedefi yoktur.
 1. Windows Docker Desktop üzerinde `docker compose up --build` çalıştır; veritabanı,
    migration ve API health kontrollerini doğrula.
 2. Örnek belgeleri yükleyip hybrid retrieval ve kaynaklı yanıt akışını uçtan uca test et.
-3. `uv run pytest` ve `uv run ruff check .` doğrulamalarını Python 3.12/3.13 ortamında
-   çalıştır.
+3. Belge yükleme ve sorgu endpointleri için veritabanı destekli entegrasyon testleri ekle.
 
 ## Sabit kararlar
 
